@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { api } from "~/utils/api";
+import { UserButton } from "@clerk/nextjs";
+import Link from "next/link";
+const statusOptions = ["pending", "ongoing", "completed"];
 
 export default function Dashboard() {
   const user = useUser();
@@ -51,7 +54,6 @@ export default function Dashboard() {
         onSuccess: () => {
           void intervieweesQuery.refetch();
           setModalOpen(false);
-          location.reload();
         },
       });
     }
@@ -79,7 +81,6 @@ export default function Dashboard() {
         });
 
         void intervieweesQuery.refetch();
-        location.reload();
         setIsEditing(null);
       } catch (error) {
         console.error("Error updating interviewee:", error);
@@ -96,109 +97,127 @@ export default function Dashboard() {
     void intervieweesQuery.refetch();
   }, [intervieweesQuery.refetch]);
 
-
   return (
     <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Interviewee Dashboard</h1>
+        <Link href={'/'} className="bg-red-400 hover:bg-red-600 text-white font-bold py-2 px-2 rounded" >Return</Link>
+        <div className="flex justify-between">
+            <h1 className="text-2xl font-bold mb-4 mt-4">Interviewee Dashboard</h1>
+            <div className="flex items-center text-bold">
+            USER SETTINGS - &nbsp;
+                <UserButton afterSignOutUrl="/"/>
+            </div>
+        </div>
       {user.user != null && (
-        <button
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          <button
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mb-2 rounded"
           onClick={handleAddItemClick}
-        >
-          Add Item
-        </button>
+          >
+            Add Item
+            </button>
       )}
       <div className="overflow-x-auto">
-        <table className="min-w-full border border-collapse border-gray-300">
-          <thead className="bg-blue-200">
-            <tr>
-              <th className="py-2 px-4 border">Name</th>
-              <th className="py-2 px-4 border">Status</th>
-              <th className="py-2 px-4 border">Feedback</th>
-              <th className="py-2 px-4 border">Rating</th>
-              <th className="py-2 px-4 border">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {intervieweesQuery.data?.map((e, index) => (
-              <tr key={index} className={index % 2 === 0 ? "bg-gray-100" : "bg-white"}>
-                <td className="py-2 px-4 border text-center">
-                  {isEditing === index ? (
-                    <input
-                      type="text"
-                      name="name"
-                      value={editedFields.name}
-                      onChange={(e) => setEditedFields({ ...editedFields, name: e.target.value })}
-                    />
-                  ) : (
-                    e.name
-                  )}
-                </td>
-                <td className="py-2 px-4 border text-center">
-                  {isEditing === index ? (
-                    <input
-                      type="text"
-                      name="status"
-                      value={editedFields.status}
-                      onChange={(e) => setEditedFields({ ...editedFields, status: e.target.value })}
-                    />
-                  ) : (
-                    e.status
-                  )}
-                </td>
-                <td className="py-2 px-4 border text-center">
-                  {isEditing === index ? (
-                    <input
-                      type="text"
-                      name="feedback"
-                      value={editedFields.feedback}
-                      onChange={(e) => setEditedFields({ ...editedFields, feedback: e.target.value })}
-                    />
-                  ) : (
-                    e.feedback == "" ? "No feedback" : e.feedback
-                  )}
-                </td>
-                <td className="py-2 px-4 border text-center">
-                  {isEditing === index ? (
-                    <input
-                      type="number"
-                      name="rating"
-                      value={editedFields.rating}
-                      onChange={(e) => setEditedFields({ ...editedFields, rating: +e.target.value })}
-                    />
-                  ) : (
-                    e.rating
-                  )}
-                </td>
-                <td className="py-2 px-4 border text-center">
-                  {isEditing === index ? (
-                    <>
-                      <button
-                        className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2"
-                        onClick={() => handleSaveClick(index)}
-                      >
-                        Save
-                      </button>
-                      <button
-                        className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-                        onClick={handleCancelEdit}
-                      >
-                        Cancel
-                      </button>
-                    </>
-                  ) : (
-                    <button
-                      className="bg-blue-500 hover.bg-blue-700 text-white font.bold py-2 px-4 rounded"
-                      onClick={() => handleEditClick(index)}
-                    >
-                      Edit
-                    </button>
-                  )}
-                </td>
+        {intervieweesQuery.isLoading && <p>Loading data...</p>}
+        {!intervieweesQuery.isLoading && intervieweesQuery.data && intervieweesQuery.data.length > 0 && (
+          <table className="min-w-full border border-collapse border-gray-300">
+            <thead className="bg-blue-200">
+              <tr>
+                <th className="py-2 px-4 border">Name</th>
+                <th className="py-2 px-4 border">Status</th>
+                <th className="py-2 px-4 border">Feedback</th>
+                <th className="py-2 px-4 border">Rating</th>
+                <th className="py-2 px-4 border">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {intervieweesQuery.data.map((e, index) => (
+                <tr key={index} className={index % 2 === 0 ? "bg-gray-100" : "bg-white"}>
+                  <td className="py-2 px-4 border text-center">
+                    {isEditing === index ? (
+                      <input
+                        type="text"
+                        name="name"
+                        value={editedFields.name}
+                        onChange={(e) => setEditedFields({ ...editedFields, name: e.target.value })}
+                      />
+                    ) : (
+                      e.name
+                    )}
+                  </td>
+                  <td className="py-2 px-4 border text-center">
+                    {isEditing === index ? (
+                      <select
+                        name="status"
+                        value={editedFields.status}
+                        onChange={(e) => setEditedFields({ ...editedFields, status: e.target.value })}
+                        className="border p-2 mb-4 w-full"
+                      >
+                        {statusOptions.map((option) => (
+                          <option key={option} value={option}>
+                            {option}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      e.status
+                    )}
+                  </td>
+                  <td className="py-2 px-4 border text-center">
+                    {isEditing === index ? (
+                      <input
+                        type="text"
+                        name="feedback"
+                        value={editedFields.feedback}
+                        onChange={(e) => setEditedFields({ ...editedFields, feedback: e.target.value })}
+                      />
+                    ) : (
+                      e.feedback == "" ? "No feedback" : e.feedback
+                    )}
+                  </td>
+                  <td className="py-2 px-4 border text-center">
+                    {isEditing === index ? (
+                      <input
+                        type="number"
+                        name="rating"
+                        value={editedFields.rating}
+                        onChange={(e) => setEditedFields({ ...editedFields, rating: +e.target.value })}
+                      />
+                    ) : (
+                      e.rating
+                    )}
+                  </td>
+                  <td className="py-2 px-4 border text-center">
+                    {isEditing === index ? (
+                      <>
+                        <button
+                          className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mr-2"
+                          onClick={() => handleSaveClick(index)}
+                        >
+                          Save
+                        </button>
+                        <button
+                          className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+                          onClick={handleCancelEdit}
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        className="bg-blue-500 hover.bg-blue-700 text-white font.bold py-2 px-4 rounded"
+                        onClick={() => handleEditClick(index)}
+                      >
+                        Edit
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+        {!intervieweesQuery.isLoading && (!intervieweesQuery.data || intervieweesQuery.data.length === 0) && (
+          <p>No entries yet!</p>
+        )}
       </div>
 
       {isModalOpen && (
@@ -260,5 +279,6 @@ export default function Dashboard() {
         </div>
       )}
     </div>
+    
   );
 }

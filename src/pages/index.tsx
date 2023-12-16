@@ -30,7 +30,7 @@ export default function Home() {
             {user.isSignedIn? "Hello " + user.user.fullName + "!" : <SignInButton/>}
             <br/>
             <br/>
-            {user.isSignedIn? <Link href={'/dashboard'} >Go to Dashboard</Link> : ""}
+            {user.isSignedIn? <Link href={'/dashboard'} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 mb-2 rounded" >Go to Dashboard</Link> : ""}
           </div>
         </div>
       </main>
