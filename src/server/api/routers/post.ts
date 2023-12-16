@@ -14,8 +14,6 @@ export const postRouter = createTRPCRouter({
   create: publicProcedure
     .input(z.object({ name: z.string().min(1), status: z.string(), feedback: z.string(), rating: z.number(), authorid: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      // simulate a slow db call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       return ctx.db.interviewee.create({
         data: {
@@ -28,9 +26,13 @@ export const postRouter = createTRPCRouter({
       });
     }),
 
-  getLatest: publicProcedure.query(({ ctx }) => {
-    return ctx.db.interviewee.findFirst({
-      orderBy: { createdAt: "desc" },
+  getInterviewee: publicProcedure
+  .input(z.object({authorid: z.string()}))
+  .query(({ ctx, input }) => {
+    return ctx.db.interviewee.findMany({
+      where: {
+        authorId: input.authorid
+      }
     });
   }),
 });
